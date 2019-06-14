@@ -8,9 +8,25 @@ library(lsa)
 
 install.packages(c("tm", "hunspell"))
 
+install.packages(c("proxy"))
+library(proxy)
+
+install.packages(c("corrplot"))
+library(corrplot)
+
+install.packages(c("dendextend"))
+library(dendextend)
+
+install.packages(c("cluster"))
+library(cluster)
+
+install.packages(c("clues"))
+library(clues)
+
 library(tm)
 library(hunspell)
 library(stringr)
+
 
 # Ustawienie katalogu roboczego i struktury projektu
 
@@ -228,6 +244,50 @@ text(coordDocs[,1],coordDocs[,2],paste("d",1:19,sep=""),pos=4, col="black")
 text(coordWords[,1],coordWords[,2],rownames(coordWords),pos=4, col="red")
 legend("bottomleft", legend, cex=0.4, text.col="dark violet")
 
+#klasyfikacja wzorcowa
+
+dist_1 <- dist(tdm_tfidf_1_20_matrix, method = "euclidean")
+model_hclust_1 <- hclust(dist_1, method = "single")
+plot(model_hclust_1, cex=0.7)
+
+barplot(model_hclust_1$height, names.arg = 18)
+
+dist_2 <- dist(tdm_tfidf_1_20_matrix, method = "cosine")
+model_hclust_2 <- hclust(dist_2, method = "ward.D2")
+plot(model_hclust_2, cex=0.7)
+
+barplot(model_hclust_2$height, names.arg = 18)
+
+model_hclust_2.clusters <- cutree(model_hclust_2,3)
+res <- matrix(0,19,3)
+rownames(res) <- rownames(tdm_tf_1_20$labels)
+for (i in 1:19) {
+  res[i,model_hclust_2.clusters[i]] <- 1
+}
+corrplot(res)
+
+mds_2 <- cmdscale(dist_2, k=2, eig=TRUE)
+x<- mds_2$points[,1]
+y<- mds_2$points[,2]
+legend <- paste(paste("d",1:19, sep=""), 
+                rownames(dtm_tf_2_16),
+                sep="<-"
+)
+
+plot(x,y)
+text(x,y,paste("d",1:19, sep=""), pos=4)
+legend(-0.2,0.2,legend,cex=0.35)
+
+model_kmeans_1 <- kmeans(tdm_tfidf_1_20_matrix,3)
+res <- matrix(0,19,3)
+rownames(res) <- names(model_kmeans_1$cluster)
+for (i in 1:19) {
+  res[i,model_kmeans_1$cluster[i]] <- 1
+}
+corrplot(res)
+
+ri_h2_k1 <- adjustedRand(model_hclust_2.clusters,
+                         model_kmeans_1$cluster)
 
 
 
