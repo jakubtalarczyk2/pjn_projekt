@@ -32,6 +32,10 @@ library(stringr)
 library(topicmodels)
 library(wordcloud)
 
+#algorytm RAKE łaaa, error nie da sie rake zrobic
+#package ‘slowrakek’ is not available (for R version 3.5.2)
+install.packages(c("slowrakek"))
+library(slowraker)
 
 # Ustawienie katalogu roboczego i struktury projektu
 
@@ -385,31 +389,76 @@ lda_model_5 <- LDA(dtm_tf_4_17,
 res_5 <- posterior(lda_model_5)
 
 
-#same keywordy i prawdopodobieństwo wystąpienia
-keywords_tf_1 <- head(sort(dtm_tf_4_17_matrix[1,], decreasing = TRUE))
-keywords_tf_1
+#slowa kluczowe - wagi tf jako miary waznosci slow
+keywords_tf_2 <- head(sort(dtm_tf_4_17_matrix[2,], decreasing = TRUE))
 
-keywords_tf_19 <- head(sort(dtm_tf_4_17_matrix[19,], decreasing = TRUE))
-keywords_tf_19
+keywords_tf_6 <- head(sort(dtm_tf_4_17_matrix[6,], decreasing = TRUE))
 
-keywords_tfidf_1 <- head(sort(dtm_tfidf_4_17_matrix[1,], decreasing = TRUE))
-keywords_tfidf_1
+keywords_tf_10 <- head(sort(dtm_tf_4_17_matrix[10,], decreasing = TRUE))
+
+keywords_tf_14 <- head(sort(dtm_tf_4_17_matrix[14,], decreasing = TRUE))
+
+keywords_tf_18 <- head(sort(dtm_tf_4_17_matrix[18,], decreasing = TRUE))
+
+
+
+#slowa kluczowe - wagi tfitf jako miary waznosci slow
+keywords_tfidf_3 <- head(sort(dtm_tfidf_4_17_matrix[3,], decreasing = TRUE))
+
+keywords_tfidf_7 <- head(sort(dtm_tfidf_4_17_matrix[7,], decreasing = TRUE))
+
+keywords_tfidf_11 <- head(sort(dtm_tfidf_4_17_matrix[11,], decreasing = TRUE))
+
+keywords_tfidf_15 <- head(sort(dtm_tfidf_4_17_matrix[15,], decreasing = TRUE))
 
 keywords_tfidf_19 <- head(sort(dtm_tfidf_4_17_matrix[19,], decreasing = TRUE))
+
+
+#LDA - waznosc slow
+words_4 <- c(res_5$topics[4,]%*%res_5$terms)
+names(words_4) <- colnames(res_5$terms)
+keywords_lda_4 <- head(sort(words_4, decreasing = TRUE))
+
+words_8 <- c(res_5$topics[8,]%*%res_5$terms)
+names(words_8) <- colnames(res_5$terms)
+keywords_lda_8 <- head(sort(words_8, decreasing = TRUE))
+
+words_12 <- c(res_5$topics[12,]%*%res_5$terms)
+names(words_12) <- colnames(res_5$terms)
+keywords_lda_12 <- head(sort(words_12, decreasing = TRUE))
+
+words_16 <- c(res_5$topics[16,]%*%res_5$terms)
+names(words_16) <- colnames(res_5$terms)
+keywords_lda_16 <- head(sort(words_16, decreasing = TRUE))
+
+words_20 <- c(res_5$topics[20,]%*%res_5$terms)
+names(words_20) <- colnames(res_5$terms)
+keywords_lda_20 <- head(sort(words_20, decreasing = TRUE))
+
+
+#ladne wyswietlenie wartosci
+keywords_tf_2
+keywords_tfidf_3
+keywords_lda_4
+keywords_tf_6
+keywords_tfidf_7
+keywords_lda_8
+keywords_tf_10
+keywords_tfidf_11
+keywords_lda_12
+keywords_tf_14
+keywords_tfidf_15
+keywords_lda_16
+keywords_tf_18
 keywords_tfidf_19
+keywords_lda_20
 
-words_1 <- c(res_5$topics[1,]%*%res_5$terms)
-names(words_1) <- colnames(res_5$terms)
-keywords_lda_1 <- head(sort(words_1, decreasing = TRUE))
-keywords_lda_1
-
-words_19 <- c(res_5$topics[19,]%*%res_5$terms)
-names(words_19) <- colnames(res_5$terms)
-keywords_lda_19 <- head(sort(words_19, decreasing = TRUE))
-keywords_lda_19
-
+#chmura znacznikow - waznosc slow
 wordcloud(vcorpus[1])
-wordcloud(vcorpus[19])
+wordcloud(vcorpus[5])
+wordcloud(vcorpus[9])
+wordcloud(vcorpus[13])
+wordcloud(vcorpus[17])
 
 d_1 <- res_5$topics[1,]
 barplot(rev(d_1), 
