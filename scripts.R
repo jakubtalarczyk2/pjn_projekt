@@ -222,6 +222,16 @@ tdm_tfidf_2_19_matrix <- as.matrix(tdm_tfidf_2_19)
 tdm_tfidf_3_18_matrix <- as.matrix(tdm_tfidf_3_18)
 tdm_tfidf_4_17_matrix <- as.matrix(tdm_tfidf_4_17)
 
+dtm_tfidf_1_20_matrix <- as.matrix(dtm_tfidf_1_20)
+dtm_tfidf_2_19_matrix <- as.matrix(dtm_tfidf_2_19)
+dtm_tfidf_3_18_matrix <- as.matrix(dtm_tfidf_3_18)
+dtm_tfidf_4_17_matrix <- as.matrix(dtm_tfidf_4_17)
+
+dtm_tf_1_20 <- DocumentTermMatrix(vcorpus, control = list( bounds = list( global = c(1,20))))
+dtm_tf_2_19 <- DocumentTermMatrix(vcorpus, control = list( bounds = list( global = c(2,19))))
+dtm_tf_3_18 <- DocumentTermMatrix(vcorpus, control = list( bounds = list( global = c(3,18))))
+dtm_tf_4_17 <- DocumentTermMatrix(vcorpus, control = list( bounds = list( global = c(4,17))))
+
 lsa_model_1_20 <- lsa(tdm_tfidf_1_20_matrix)
 lsa_model_2_19 <- lsa(tdm_tfidf_2_19_matrix)
 lsa_model_3_18 <- lsa(tdm_tfidf_3_18_matrix)
@@ -244,50 +254,107 @@ text(coordDocs[,1],coordDocs[,2],paste("d",1:19,sep=""),pos=4, col="black")
 text(coordWords[,1],coordWords[,2],rownames(coordWords),pos=4, col="red")
 legend("bottomleft", legend, cex=0.4, text.col="dark violet")
 
-#klasyfikacja wzorcowa
+#klasyfikacja wzorcowa i bezwzorcowa
 
-dist_1 <- dist(tdm_tfidf_1_20_matrix, method = "euclidean")
+#odleglosc euklidesowa - dendrgramy oraz wykresy sklupkowe wykrytych tematow
+dist_1 <- dist(dtm_tfidf_1_20_matrix, method = "euclidean")
 model_hclust_1 <- hclust(dist_1, method = "single")
 plot(model_hclust_1, cex=0.7)
 
-barplot(model_hclust_1$height, names.arg = 18)
+barplot(model_hclust_1$height, names.arg = 19:1)
 
-dist_2 <- dist(tdm_tfidf_1_20_matrix, method = "cosine")
-model_hclust_2 <- hclust(dist_2, method = "ward.D2")
+dist_2 <- dist(dtm_tfidf_2_19_matrix, method = "euclidean")
+model_hclust_2 <- hclust(dist_2, method = "single")
 plot(model_hclust_2, cex=0.7)
 
-barplot(model_hclust_2$height, names.arg = 18)
+barplot(model_hclust_2$height, names.arg = 19:1)
 
-model_hclust_2.clusters <- cutree(model_hclust_2,3)
-res <- matrix(0,19,3)
-rownames(res) <- rownames(tdm_tf_1_20$labels)
-for (i in 1:19) {
-  res[i,model_hclust_2.clusters[i]] <- 1
+dist_3 <- dist(dtm_tfidf_3_18_matrix, method = "euclidean")
+model_hclust_3 <- hclust(dist_3, method = "single")
+plot(model_hclust_3, cex=0.7)
+
+barplot(model_hclust_3$height, names.arg = 19:1)
+
+dist_4 <- dist(dtm_tfidf_4_17_matrix, method = "euclidean")
+model_hclust_4 <- hclust(dist_4, method = "single")
+plot(model_hclust_4, cex=0.7)
+
+barplot(model_hclust_4$height, names.arg = 19:1)
+
+#a teraz tak jak powinno sie robic, czyli odlegloscia Cosinusowa
+
+dist_5 <- dist(dtm_tfidf_1_20_matrix, method = "cosine")
+model_hclust_5 <- hclust(dist_5, method = "ward.D2")
+plot(model_hclust_5, cex=0.7)
+
+barplot(model_hclust_5$height, names.arg = 19:1)
+
+dist_6 <- dist(dtm_tfidf_2_19_matrix, method = "cosine")
+model_hclust_6 <- hclust(dist_6, method = "ward.D2")
+plot(model_hclust_6, cex=0.7)
+
+barplot(model_hclust_6$height, names.arg = 19:1)
+
+dist_7 <- dist(dtm_tfidf_3_18_matrix, method = "cosine")
+model_hclust_7 <- hclust(dist_7, method = "ward.D2")
+plot(model_hclust_7, cex=0.7)
+
+barplot(model_hclust_7$height, names.arg = 19:1)
+
+dist_8 <- dist(dtm_tfidf_4_17_matrix, method = "cosine")
+model_hclust_8 <- hclust(dist_8, method = "ward.D2")
+plot(model_hclust_8, cex=0.7)
+
+barplot(model_hclust_8$height, names.arg = 19:1)
+
+#klasyfikacja wzorcowa - klasyfikujemy tylko i wylacznie
+#najlepsze, czyli 4-17 w cosinusowej
+
+#najpierw dla domyslnej wartosci 5 tematow
+
+model_hclust_8.clusters <- cutree(model_hclust_8,5)
+res <- matrix(0,20,5)
+rownames(res) <- names(model_hclust_8.clusters)
+for (i in 1:20) {
+  res[i,model_hclust_8.clusters[i]] <- 1
 }
 corrplot(res)
 
-mds_2 <- cmdscale(dist_2, k=2, eig=TRUE)
-x<- mds_2$points[,1]
-y<- mds_2$points[,2]
-legend <- paste(paste("d",1:19, sep=""), 
-                rownames(dtm_tf_2_16),
-                sep="<-"
-)
-
-plot(x,y)
-text(x,y,paste("d",1:19, sep=""), pos=4)
-legend(-0.2,0.2,legend,cex=0.35)
-
-model_kmeans_1 <- kmeans(tdm_tfidf_1_20_matrix,3)
-res <- matrix(0,19,3)
-rownames(res) <- names(model_kmeans_1$cluster)
-for (i in 1:19) {
-  res[i,model_kmeans_1$cluster[i]] <- 1
+#dla 6
+model_hclust_8.clusters <- cutree(model_hclust_8,6)
+res <- matrix(0,20,6)
+rownames(res) <- names(model_hclust_8.clusters)
+for (i in 1:20) {
+  res[i,model_hclust_8.clusters[i]] <- 1
 }
 corrplot(res)
 
-ri_h2_k1 <- adjustedRand(model_hclust_2.clusters,
-                         model_kmeans_1$cluster)
+#dla 10
+model_hclust_8.clusters <- cutree(model_hclust_8,10)
+res <- matrix(0,20,10)
+rownames(res) <- names(model_hclust_8.clusters)
+for (i in 1:20) {
+  res[i,model_hclust_8.clusters[i]] <- 1
+}
+corrplot(res)
+
+#dla 2
+model_hclust_8.clusters <- cutree(model_hclust_8,2)
+res <- matrix(0,20,2)
+rownames(res) <- names(model_hclust_8.clusters)
+for (i in 1:20) {
+  res[i,model_hclust_8.clusters[i]] <- 1
+}
+corrplot(res)
+
+#dla 3
+model_hclust_8.clusters <- cutree(model_hclust_8,3)
+res <- matrix(0,20,3)
+rownames(res) <- names(model_hclust_8.clusters)
+for (i in 1:20) {
+  res[i,model_hclust_8.clusters[i]] <- 1
+}
+corrplot(res)
 
 
 
