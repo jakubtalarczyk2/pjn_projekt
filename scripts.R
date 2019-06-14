@@ -6,7 +6,7 @@ library(here)
 install.packages("lsa")
 library(lsa)
 
-install.packages(c("tm", "hunspell"))
+install.packages(c("tm", "hunspell", "topicmodels", "wordcloud"))
 
 install.packages(c("proxy"))
 library(proxy)
@@ -23,9 +23,14 @@ library(cluster)
 install.packages(c("clues"))
 library(clues)
 
+#te do klasyfikacji
 library(tm)
 library(hunspell)
 library(stringr)
+
+#te do diriszlom
+library(topicmodels)
+library(wordcloud)
 
 
 # Ustawienie katalogu roboczego i struktury projektu
@@ -232,6 +237,11 @@ dtm_tf_2_19 <- DocumentTermMatrix(vcorpus, control = list( bounds = list( global
 dtm_tf_3_18 <- DocumentTermMatrix(vcorpus, control = list( bounds = list( global = c(3,18))))
 dtm_tf_4_17 <- DocumentTermMatrix(vcorpus, control = list( bounds = list( global = c(4,17))))
 
+dtm_tf_1_20_matrix <- as.matrix(dtm_tf_1_20)
+dtm_tf_2_19_matrix <- as.matrix(dtm_tf_2_19)
+dtm_tf_3_18_matrix <- as.matrix(dtm_tf_3_18)
+dtm_tf_4_17_matrix <- as.matrix(dtm_tf_4_17)
+
 lsa_model_1_20 <- lsa(tdm_tfidf_1_20_matrix)
 lsa_model_2_19 <- lsa(tdm_tfidf_2_19_matrix)
 lsa_model_3_18 <- lsa(tdm_tfidf_3_18_matrix)
@@ -357,6 +367,127 @@ for (i in 1:20) {
 corrplot(res)
 
 
+#Latent Dirichlet Allocation
+
+#utworzenie modelu LDA
+n_words <- ncol(dtm_tf_4_17)
+n_groups <- 5
+
+lda_model_5 <- LDA(dtm_tf_4_17, 
+                   k=n_groups, 
+                   method="Gibbs",
+                   control=list(
+                     burnin=2000,
+                     thin=100,
+                     iter=3000
+                   )
+)
+res_5 <- posterior(lda_model_5)
+
+
+#same keywordy i prawdopodobieństwo wystąpienia
+keywords_tf_1 <- head(sort(dtm_tf_4_17_matrix[1,], decreasing = TRUE))
+keywords_tf_1
+
+keywords_tf_19 <- head(sort(dtm_tf_4_17_matrix[19,], decreasing = TRUE))
+keywords_tf_19
+
+keywords_tfidf_1 <- head(sort(dtm_tfidf_4_17_matrix[1,], decreasing = TRUE))
+keywords_tfidf_1
+
+keywords_tfidf_19 <- head(sort(dtm_tfidf_4_17_matrix[19,], decreasing = TRUE))
+keywords_tfidf_19
+
+words_1 <- c(res_5$topics[1,]%*%res_5$terms)
+names(words_1) <- colnames(res_5$terms)
+keywords_lda_1 <- head(sort(words_1, decreasing = TRUE))
+keywords_lda_1
+
+words_19 <- c(res_5$topics[19,]%*%res_5$terms)
+names(words_19) <- colnames(res_5$terms)
+keywords_lda_19 <- head(sort(words_19, decreasing = TRUE))
+keywords_lda_19
+
+wordcloud(vcorpus[1])
+wordcloud(vcorpus[19])
+
+d_1 <- res_5$topics[1,]
+barplot(rev(d_1), 
+        horiz = TRUE, 
+        main=rownames(res_5$topics)[1],
+        xlab="Probability"
+)
+
+d_5 <- res_5$topics[5,]
+barplot(rev(d_5), 
+        horiz = TRUE, 
+        main=rownames(res_5$topics)[5],
+        xlab="Probability"
+)
+
+
+d_9 <- res_5$topics[9,]
+barplot(rev(d_9), 
+        horiz = TRUE, 
+        main=rownames(res_5$topics)[9],
+        xlab="Probability"
+)
+
+d_13 <- res_5$topics[13,]
+barplot(rev(d_13), 
+        horiz = TRUE, 
+        main=rownames(res_5$topics)[13],
+        xlab="Probability"
+)
+
+
+d_17 <- res_5$topics[17,]
+barplot(rev(d_17), 
+        horiz = TRUE, 
+        main=rownames(res_5$topics)[17],
+        xlab="Probability"
+)
+
+#udział słów w tematach
+t_1 <- head(sort(res_5$terms[1,], decreasing = TRUE),20)
+barplot(rev(t_1), 
+        horiz = TRUE,
+        las=1,
+        main="Topic 1",
+        xlab="Probability"
+)
+
+t_2 <- head(sort(res_5$terms[2,], decreasing = TRUE),20)
+barplot(rev(t_2), 
+        horiz = TRUE,
+        las=1,
+        main="Topic 2",
+        xlab="Probability"
+)
+
+t_3 <- head(sort(res_5$terms[3,], decreasing = TRUE),20)
+barplot(rev(t_3), 
+        horiz = TRUE,
+        las=1,
+        main="Topic 3",
+        xlab="Probability"
+)
+
+t_4 <- head(sort(res_5$terms[4,], decreasing = TRUE),20)
+barplot(rev(t_4), 
+        horiz = TRUE,
+        las=1,
+        main="Topic 4",
+        xlab="Probability"
+)
+
+t_5 <- head(sort(res_5$terms[5,], decreasing = TRUE),20)
+barplot(rev(t_5), 
+        horiz = TRUE,
+        las=1,
+        main="Topic 5",
+        xlab="Probability"
+)
 
 
 
